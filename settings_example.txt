@@ -1,0 +1,8 @@
+OrganizationUrl=https://dev.azure.com/huserben/
+TeamProject=MultistageBuild
+PersonalAccessToken=XXX
+PipelineId=59
+Branch=refs/heads/main
+
+Stage2_Variables=VariableGroup.ThisIsSomeFixedValue
+Stage3_Variables=VariableGroup.ThisIsSomeFixedValue,VariableGroup.ThisIsSomeFlexibleValue
