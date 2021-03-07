@@ -54,7 +54,7 @@ Approved Stage
 ```
 
 ## Configuration
-The configuration is done using a *settings.txt* file. You can check out the example file - rename it to *settings.txt* to run the script.
+The configuration is done using a *settings.txt* file. You can check out the example file - rename it to *settings.txt* to run the script or specify the path to your settings file via the *SettingsFilePath* parameter.
 
 You need to specify your organization, team project, Personal Access Token (important as the PAT must belong to a user that can approve the stage) and the pipeline id of the pipeline you want to check together with the branch you want to check against.
 

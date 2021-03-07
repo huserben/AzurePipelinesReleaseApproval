@@ -1,3 +1,8 @@
+param(
+    [string]$SettingsFilePath = "$($PSScriptRoot)/settings.txt",
+    [switch]$NonInteractive = $False
+)
+
 function Parse-Configuration() {
     param(
         $SettingsFile
@@ -80,7 +85,7 @@ function Approve-Stage {
     Write-Host "Approved Stage"
 }
 
-function Get-VariableGroupId(){
+function Get-VariableGroupId() {
     param(
         $VariableGroupName,
         $VariableGroups
@@ -125,7 +130,7 @@ function Get-StageVariables() {
             $variabelGroupNameSplit = $splitVariables[$i].Split('.')
             $variableGroupName = $variabelGroupNameSplit[0]
 
-            if (!$variableGroups.ContainsKey($variableGroupName)){
+            if (!$variableGroups.ContainsKey($variableGroupName)) {
                 $variableGroups[$variableGroupName] = @()
             }
 
@@ -139,7 +144,7 @@ function Get-StageVariables() {
     return $variableGroups
 }
 
-function Set-VariableGroupValues(){
+function Set-VariableGroupValues() {
     param(
         $VariableGroupId,
         $VariableGroupName,
@@ -156,8 +161,8 @@ function Set-VariableGroupValues(){
     $variableString = ""
     $isFirstVariable = $true
 
-    $response.variables.PSObject.Properties | ForEach-Object{
-        if (!$isFirstVariable){
+    $response.variables.PSObject.Properties | ForEach-Object {
+        if (!$isFirstVariable) {
             $variableString += ","
         }
 
@@ -167,7 +172,7 @@ function Set-VariableGroupValues(){
         $variableString += """$($_.Name)"": {"
 
         $_.Value.PSObject.Properties | ForEach-Object {
-            if (!$isFirstProperty){
+            if (!$isFirstProperty) {
                 $variableString += ","
             }
 
@@ -193,7 +198,7 @@ function Set-VariableGroupValues(){
 }
 
 Write-Host "Reading settings file..."
-$configuration = Parse-Configuration -SettingsFile "$($PSScriptRoot)\settings.txt"
+$configuration = Parse-Configuration -SettingsFile $SettingsFilePath
 
 Write-Host "==============================================="
 Write-Host "Config"
@@ -227,14 +232,17 @@ $response.value | ForEach-Object {
 }
 
 $buildId = "-1"
-$buildToInspect = Read-Host "Which build you want to inspect? (Hit enter for newest build)"
 
-for ($i = 0; $i -lt $inProgressBuilds.Length; $i++) {
-    $inProgressBuild = $inProgressBuilds[$i]
+if (!$NonInteractive) {
+    $buildToInspect = Read-Host "Which build you want to inspect? (Hit enter for newest build)"
 
-    if ($inProgressBuild.buildNumber -eq $buildToInspect) {
-        $buildId = $inProgressBuild.id
-        break
+    for ($i = 0; $i -lt $inProgressBuilds.Length; $i++) {
+        $inProgressBuild = $inProgressBuilds[$i]
+
+        if ($inProgressBuild.buildNumber -eq $buildToInspect) {
+            $buildId = $inProgressBuild.id
+            break
+        }
     }
 }
 
@@ -262,7 +270,7 @@ $stages | ForEach-Object {
     if ($_.state -eq "completed") {
         $completedStages += $_
     }
-    elseif ($_.state -eq "inProgress"){
+    elseif ($_.state -eq "inProgress") {
         $inProgressStages += $_
     }
     else {
@@ -277,7 +285,7 @@ $stages | ForEach-Object {
                 $stagesWaitingForApproval += New-Object psobject -Property $properties
             }
         }
-        else{
+        else {
             $notStartedStages += $_
         }
     }
@@ -317,14 +325,19 @@ Write-Host ""
 
 $variableGroups = Get-VariableGroups
 
-if ($stagesWaitingForApproval.Length -lt 1){
+if ($stagesWaitingForApproval.Length -lt 1) {
     Write-Host "No stage to approve - will exit"
     exit
 }
 
 $defaultStage = $stagesWaitingForApproval[0].stage.name
 
-if (!($stageToApprove = Read-Host "Which stage to approve? (Hit enter for $($defaultStage))")) {
+if (!$NonInteractive) {
+    if (!($stageToApprove = Read-Host "Which stage to approve? (Hit enter for $($defaultStage))")) {
+        $stageToApprove = $defaultStage
+    }
+}
+else{
     $stageToApprove = $defaultStage
 }
 
@@ -338,7 +351,7 @@ $stagesWaitingForApproval | ForEach-Object {
             $variableToValueMapping = @{}
             $variableGroupVariables = $stageVariables.Item($_)
             
-            for ($i = 0; $i -lt $variableGroupVariables.Length; $i++){
+            for ($i = 0; $i -lt $variableGroupVariables.Length; $i++) {
                 $variableName = $variableGroupVariables[$i]
                 $variableToValueMapping[$variableName] = Read-Host "Please enter value for Variable $($variableName) from Variable Group $($_)"
             }
