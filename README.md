@@ -70,3 +70,13 @@ This would cause the script, when approving *Stage2* to ask for input for a vari
 You can also set more than one variable by separating the values with commas. The variables can be in different variable groups.
 
 **Important:** If you have secret variables in your variable group, those values will be lost during the update as they cannot be read initially and the whole variable group will be set again with the provided values. Non-Secret values keep their original value. So it's a good idea to create a dedicated variable group with values that are all set from the script to not accidentally lose secret values.
+
+## Running Non-Interactive
+You can run the script without the need for any user input by calling it with the *NonInteractive* switch. It will then choose the latest build and the first stage it finds for approval. If you have the need to specify variables you can also do that by using the *DefaultVariableValues* parameter. It expects a hashtable where the key is the name of the Variable Group and the value is another hashtable with the variable name as key and the value you want to set as value:
+
+```
+$defaultValues = @{VariableGroup = @{ThisIsSomeFixedValue = "MyFirstDefaultValue"; ThisIsSomeFlexibleValue = "MySecondDefaultValue"}}
+.\approve_stage.ps1 -NonInteractive -DefaultVariableValues $defaultValues
+```
+
+These values are then automatically applied when approving and the configuration of the stage expectes those variables to be set.

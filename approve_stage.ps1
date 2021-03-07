@@ -1,6 +1,7 @@
 param(
     [string]$SettingsFilePath = "$($PSScriptRoot)/settings.txt",
-    [switch]$NonInteractive = $False
+    [switch]$NonInteractive = $False,
+    $DefaultVariableValues = @{}
 )
 
 function Parse-Configuration() {
@@ -337,7 +338,7 @@ if (!$NonInteractive) {
         $stageToApprove = $defaultStage
     }
 }
-else{
+else {
     $stageToApprove = $defaultStage
 }
 
@@ -348,12 +349,17 @@ $stagesWaitingForApproval | ForEach-Object {
         $stageVariables.Keys | ForEach-Object {
             $variableGroupId = Get-VariableGroupId -VariableGroupName $_ -VariableGroups $variableGroups
 
-            $variableToValueMapping = @{}
-            $variableGroupVariables = $stageVariables.Item($_)
+            if (!$NonInteractive) {
+                $variableToValueMapping = @{}
+                $variableGroupVariables = $stageVariables.Item($_)
             
-            for ($i = 0; $i -lt $variableGroupVariables.Length; $i++) {
-                $variableName = $variableGroupVariables[$i]
-                $variableToValueMapping[$variableName] = Read-Host "Please enter value for Variable $($variableName) from Variable Group $($_)"
+                for ($i = 0; $i -lt $variableGroupVariables.Length; $i++) {
+                    $variableName = $variableGroupVariables[$i]
+                    $variableToValueMapping[$variableName] = Read-Host "Please enter value for Variable $($variableName) from Variable Group $($_)"
+                }
+            }
+            else{
+                $variableToValueMapping = $DefaultVariableValues[$_]
             }
 
             Set-VariableGroupValues -VariableGroupId $variableGroupId -VariableGroupName $_ -Variables $variableToValueMapping
